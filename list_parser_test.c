@@ -11,6 +11,7 @@ int main(int argc, const char *argv[])
     }
 
     Input *input;
+    Token *token;
 
     if (init_input(argv[1], &input) < 0)
     {
@@ -18,8 +19,15 @@ int main(int argc, const char *argv[])
         return 1;
     }
 
-    printf("Input: %s, length: %zu, current position: %d\n", input->text, input->len, input->pos);
+    if (next_token(input, &token) < 0)
+    {
+        printf("next_token error\n");
+        return 1;
+    }
 
+    printf("%s\n", repr_token(token));
+
+    free_token(token);
     free_input(input);
 
     return 0;

@@ -5,12 +5,12 @@
 
 // 代表词法单元类型
 typedef enum TokenType_ {
-    NAME, COMMA, LBRACK, RBRACK
+    NAME, COMMA, LBRACK, RBRACK, T_EOF
 } TokenType;
 
 // 代表一个词法单元
 typedef struct Token_ {
-    TokenType token;
+    TokenType type;
     char *text;
 } Token;
 
@@ -25,13 +25,15 @@ typedef struct Input_ {
 
 // 获取下一个词法单元
 int next_token(Input *input, Token **token);
+void free_token(Token *token);
+char *repr_token(const Token *token);
 
 // 初始化输入字符串
 int init_input(const char *input, Input **dest);
 void free_input(Input *input);
 
 // 获取Token的名称
-char *get_token_name(TokenType type);
+char *get_token_name(const TokenType type);
 
 
 #endif

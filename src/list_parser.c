@@ -88,10 +88,13 @@ int next_token(Input *input, Token **token)
                 *token = ret_val;
                 return 0;
             default:
-                if (isalpha(c)) {
+                if (isalpha(c))
+                {
                     *token = NAMES(input);
                     return 0;
-                } else {
+                }
+                else
+                {
                     printf("Invalid token: %c", c);
                     exit(1);
                 }

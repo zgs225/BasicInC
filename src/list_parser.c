@@ -6,6 +6,7 @@
 
 #define MAX_NAME_LEN 256
 #define BUF_SIZE 512
+#define K_LOOKAHEADS 2
 
 char next_character(Input *input);
 void consume(Input *input);
@@ -16,8 +17,11 @@ void parse_list_internal(Input *input);
 void match_elements(Input *input);
 void match_element(Input *input);
 void consume_token(Input *input);
+TokenType LA(int i);
+void LT(int i, Token **token);
 
-Token *lookahead;
+Token *lookaheads[K_LOOKAHEADS] = {0};
+int current_pos = 0;
 
 // 初始化Input结构体
 int init_input(const char *input, Input **dest)
@@ -95,6 +99,12 @@ int next_token(Input *input, Token **token)
                 ret_val->text = strcpy((char *) malloc(2), ",");
                 *token = ret_val;
                 return 0;
+            case '=':
+                consume(input);
+                ret_val->type = EQUALS;
+                ret_val->text = strcpy((char *) malloc(2), "=");
+                *token = ret_val;
+                return 0;
             default:
                 if (isalpha(c))
                 {
@@ -166,6 +176,9 @@ char *get_token_name(const TokenType type)
         case RBRACK:
             strcpy(buf, "RBRACK");
             break;
+        case EQUALS:
+            strcpy(buf, "EQUALS");
+            break;
         case T_EOF:
             strcpy(buf, "EOF");
             break;
@@ -214,12 +227,10 @@ Token *NAMES(Input *input)
 
 void parse_list(Input *input)
 {
-    if (next_token(input, &lookahead) < 0)
+    for (int i = 0; i < K_LOOKAHEADS; i++)
     {
-        printf("next token error");
-        exit(1);
+        consume_token(input);
     }
-
     parse_list_internal(input);
 }
 
@@ -233,6 +244,8 @@ void parse_list_internal(Input *input)
 void match_elements(Input *input)
 {
     match_element(input);
+    Token *lookahead;
+    LT(1, &lookahead);
     while (lookahead->type == COMMA)
     {
         match(COMMA, input);
@@ -242,16 +255,24 @@ void match_elements(Input *input)
 
 void match_element(Input *input)
 {
-    if (lookahead->type == LBRACK)
+    if (LA(1) == NAME && LA(2) == EQUALS)
     {
-        parse_list_internal(input);
+        match(NAME, input);
+        match(EQUALS, input);
+        match(NAME, input);
     }
-    else if (lookahead->type == NAME)
+    else if (LA(1) == NAME)
     {
         match(NAME, input);
     }
+    else if (LA(1) == LBRACK)
+    {
+        parse_list_internal(input);
+    }
     else
     {
+        Token *lookahead;
+        LT(1, &lookahead);
         printf("excepting name or list; found %s", repr_token(lookahead));
         exit(1);
     }
@@ -259,6 +280,9 @@ void match_element(Input *input)
 
 void match(TokenType type, Input *input)
 {
+    Token *lookahead;
+    LT(1, &lookahead);
+
     if (type == lookahead->type)
     {
         consume_token(input);
@@ -272,6 +296,31 @@ void match(TokenType type, Input *input)
 
 void consume_token(Input *input)
 {
-    free_token(lookahead);
-    next_token(input, &lookahead);
+    Token *tmp;
+    if (next_token(input, &tmp) < 0)
+    {
+        printf("next token error\n");
+        exit(1);
+    }
+
+    if (lookaheads[current_pos])
+    {
+        free_token(lookaheads[current_pos]);
+    }
+
+    lookaheads[current_pos] = tmp;
+    current_pos = (current_pos + 1) % K_LOOKAHEADS;
+}
+
+TokenType LA(int i)
+{
+    Token *tmp;
+    LT(i, &tmp);
+    return tmp->type;
+}
+
+void LT(int i, Token **token)
+{
+    Token *tmp = lookaheads[(current_pos + i - 1) % K_LOOKAHEADS];
+    *token = tmp;
 }

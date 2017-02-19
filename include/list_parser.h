@@ -5,7 +5,7 @@
 
 // 代表词法单元类型
 typedef enum TokenType_ {
-    NAME, COMMA, LBRACK, RBRACK, T_EOF
+    NAME, COMMA, LBRACK, RBRACK, EQUALS, T_EOF
 } TokenType;
 
 // 代表一个词法单元

@@ -22,18 +22,17 @@ typedef struct Input_ {
     int pos;
 } Input;
 
-
 // 获取下一个词法单元
 int next_token(Input *input, Token **token);
 void free_token(Token *token);
 char *repr_token(const Token *token);
+// 获取Token的名称
+char *get_token_name(const TokenType type);
 
 // 初始化输入字符串
 int init_input(const char *input, Input **dest);
 void free_input(Input *input);
 
-// 获取Token的名称
-char *get_token_name(const TokenType type);
-
+void parse_list(Input *input);
 
 #endif

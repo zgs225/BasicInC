@@ -11,6 +11,14 @@ char next_character(Input *input);
 void consume(Input *input);
 Token *NAMES(Input *input);
 
+void match(TokenType type, Input *input);
+void parse_list_internal(Input *input);
+void match_elements(Input *input);
+void match_element(Input *input);
+void consume_token(Input *input);
+
+Token *lookahead;
+
 // 初始化Input结构体
 int init_input(const char *input, Input **dest)
 {
@@ -202,4 +210,68 @@ Token *NAMES(Input *input)
     ret_val->text = strcpy((char *) malloc(index), buf);
 
     return ret_val;
+}
+
+void parse_list(Input *input)
+{
+    if (next_token(input, &lookahead) < 0)
+    {
+        printf("next token error");
+        exit(1);
+    }
+
+    parse_list_internal(input);
+}
+
+void parse_list_internal(Input *input)
+{
+    match(LBRACK, input);
+    match_elements(input);
+    match(RBRACK, input);
+}
+
+void match_elements(Input *input)
+{
+    match_element(input);
+    while (lookahead->type == COMMA)
+    {
+        match(COMMA, input);
+        match_elements(input);
+    }
+}
+
+void match_element(Input *input)
+{
+    if (lookahead->type == LBRACK)
+    {
+        parse_list_internal(input);
+    }
+    else if (lookahead->type == NAME)
+    {
+        match(NAME, input);
+    }
+    else
+    {
+        printf("excepting name or list; found %s", repr_token(lookahead));
+        exit(1);
+    }
+}
+
+void match(TokenType type, Input *input)
+{
+    if (type == lookahead->type)
+    {
+        consume_token(input);
+    }
+    else
+    {
+        printf("Error: expect \"%s\", but actual is \"%s\"\n", get_token_name(type), lookahead->text);
+        exit(1);
+    }
+}
+
+void consume_token(Input *input)
+{
+    free_token(lookahead);
+    next_token(input, &lookahead);
 }

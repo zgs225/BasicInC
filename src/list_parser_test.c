@@ -11,7 +11,6 @@ int main(int argc, const char *argv[])
     }
 
     Input *input;
-    Token *token;
 
     if (init_input(argv[1], &input) < 0)
     {
@@ -19,28 +18,7 @@ int main(int argc, const char *argv[])
         return 1;
     }
 
-    while(1)
-    {
-        if (next_token(input, &token) < 0)
-        {
-            printf("next_token error\n");
-            return 1;
-        }
-        printf("%s\n", repr_token(token));
-
-        if (token->type == T_EOF)
-            break;
-
-        free_token(token);
-        token = NULL;
-    }
-
-    if (token)
-    {
-        free_token(token);
-        token = NULL;
-    }
-
+    parse_list(input);
     free_input(input);
     input = NULL;
 

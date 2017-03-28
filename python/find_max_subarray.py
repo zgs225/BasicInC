@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 def find_max_subarray(arr):
     """
     寻找给定数据中的最大子数组
@@ -54,6 +55,25 @@ def _find_max_crossing_subarray(arr, low, mid, high):
     return left_low, right_high, (left_max + right_max)
 
 
+def find_max_subarray_violately(arr):
+    if len(arr) == 1:
+        return 1, 1, arr[1]
+
+    left = 0
+    right = 1
+    _sum = None
+
+    for i in range(0, len(arr)-1):
+        for j in range(1, len(arr)):
+            _sum2 = sum(arr[i:j+1])
+            if _sum is None or _sum2 >= _sum:
+                left = i
+                right = j
+                _sum = _sum2
+
+    return left, right, _sum
+
+
 if __name__ == '__main__':
     import random
 
@@ -63,5 +83,9 @@ if __name__ == '__main__':
         arr.append(random.randint(-100, 100))
 
     l, h, s = find_max_subarray(arr)
-    print arr
     print l, h, s
+    print arr[l:h+1]
+
+    l, h, s = find_max_subarray_violately(arr)
+    print l, h, s
+    print arr[l:h+1]
